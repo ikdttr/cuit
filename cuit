@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+# cuit - CUI client for Twitter
+#
+# version 0.1
+# author  Tetsuro IKEDA (mir)
+# license GPLv2
+
 use strict;
 use Net::Twitter;
 use Term::ReadLine;
