@@ -1,0 +1,123 @@
+#!/usr/bin/perl
+use strict;
+use Net::Twitter;
+use Term::ReadLine;
+use encoding 'utf-8';
+binmode STDIN,  ":utf8";
+binmode STDOUT, ":utf8";
+
+#start main
+my $term = new Term::ReadLine "my term";
+my $u = $term->readline("username: ");
+chomp $u;
+system "stty -echo";
+my $p = $term->readline("password: ");
+chomp $p;
+system "stty echo";
+print "\n\n";
+
+my $twit = Net::Twitter->new(
+    username => $u,
+    password => $p
+    );
+my $latest_id = 0;
+my $sleep_sec = 180;
+my $mode = 0;
+
+$SIG{ INT } = sub
+{
+    if ($mode == 1)
+    {
+	update_status();
+    }
+};
+
+while (1)
+{
+    $latest_id = print_friends($latest_id);
+    sleep($sleep_sec);
+}
+
+#end main
+
+sub lpad
+{
+    my $str;
+    my $res;
+    my $blank = "                           ";
+    my $padding_size = 13;
+    ($str) = @_;
+    if (length($str) < $padding_size)
+    {
+	$res = substr($blank,0,($padding_size - length($str))) . $str; 
+	return $res;
+    }
+    else
+    {
+	return $str;
+    } 
+}
+
+sub print_friends
+{
+    my $id = $_[0];
+    my $param;
+    my $array_ref;
+    if ($id > 0)
+    {
+	$array_ref = $twit->friends_timeline({since_id => $id});
+    }
+    else
+    {
+	$array_ref = $twit->friends_timeline();
+    }
+    if ( my $err = $@ ) {
+        die $@ unless blessed $err and $err->isa('Net::Twitter::Error');
+        warn "HTTP Response Code: ", $err->code, "\n",
+	"HTTP Message......: ", $err->message, "\n",
+	"Twitter error.....: ", $err->error, "\n";
+	exit;
+    }
+    $mode = 1;
+    if ($array_ref)
+    {
+	@{$array_ref} = reverse(@{$array_ref});
+	foreach my $hash_ref ( @$array_ref ){
+	    $id = $hash_ref->{'id'};
+	    my $screen_name = $hash_ref->{'user'}{'screen_name'};
+	    my $text = $hash_ref->{'text'};
+	    $text =~ s/\n/ /g;
+	    print lpad($screen_name) . ": " . $text . "\n";
+	}
+    }
+    return $id;
+}
+
+sub update_status
+{
+    $mode = 0;
+    my $head = "\nupdate(" . $u . "): ";
+    my $str = $term->readline($head);
+    chomp $str;
+    if (length($str) > 0)
+    {
+	if ($str eq "quit" || $str eq "\\q")
+	{
+	    print "bye.\n";
+	    exit;
+	}
+	$twit->update($str);
+	if ( my $err = $@ ) {
+	    die $@ unless blessed $err && $err->isa('Net::Twitter::Error');
+	    warn "HTTP Response Code: ", $err->code, "\n",
+	    "HTTP Message......: ", $err->message, "\n",
+	    "Twitter error.....: ", $err->error, "\n";
+	    exit;
+	}
+    }
+    else
+    {
+	print "input canceled";
+    }
+    print "\n";
+}

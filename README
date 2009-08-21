@@ -1,0 +1,35 @@
+cuit - CUI client for Twitter
+
+# Feature
+
+Show your friends timeline, with auto-refresh.
+Update your status.
+
+# INSTALL
+
+You need to install following modules before running cuit.
+- Net::Twitter
+- Term::ReadLine
+- Term::ReadLine::Gnu
+
+And then, chmod +x cuit.
+
+# USAGE
+
+To start cuit, just execute cuit.
+You need to input your screen name and password.
+
+shell> ./cuit
+
+After login with screen name and password, cuit automatically
+show your friends timeline and refresh them with interval 3mins.
+
+To update your status, please stroke Ctrl+c.
+
+To quit cuit, type "quit" or "\q" in update textarea.
+
+# License
+This software is GPLv2.
+
+# Author
+Tetsuro IKEDA (mir) ikdttr@gmail.com
