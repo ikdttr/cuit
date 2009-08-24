@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 # cuit - CUI client for Twitter
 #
-# version 0.1
 # author  Tetsuro IKEDA (mir)
 # license GPLv2
+my $version = "0.2";
 
 use strict;
 use Net::Twitter;
@@ -13,6 +13,7 @@ binmode STDIN,  ":utf8";
 binmode STDOUT, ":utf8";
 
 #start main
+print "\nWelcome to cuit!! version " . $version . "\n";
 my $term = new Term::ReadLine "my term";
 my $u = $term->readline("username: ");
 chomp $u;
@@ -21,6 +22,9 @@ my $p = $term->readline("password: ");
 chomp $p;
 system "stty echo";
 print "\n\n";
+
+print "To update your status, push Ctrl+c.\n";
+print "To exit program, input 'quit' or '\\q' in your status.\n\n";
 
 my $twit = Net::Twitter->new(
     username => $u,
@@ -120,6 +124,7 @@ sub update_status
 	    "Twitter error.....: ", $err->error, "\n";
 	    exit;
 	}
+	$latest_id = 0;
     }
     else
     {
