@@ -3,7 +3,7 @@
 #
 # author  Tetsuro IKEDA (mir)
 # license GPLv2
-my $version = "0.2";
+my $version = "0.3";
 
 use strict;
 use Net::Twitter;
@@ -24,13 +24,15 @@ system "stty echo";
 print "\n\n";
 
 print "To update your status, push Ctrl+c.\n";
-print "To exit program, input 'quit' or '\\q' in your status.\n\n";
+print "To delete previous status, input 'delete' in your status\n";
+print "To exit program, input 'quit' in your status.\n\n";
 
 my $twit = Net::Twitter->new(
     username => $u,
     password => $p
     );
 my $latest_id = 0;
+my $latest_update_id = -1;
 my $sleep_sec = 180;
 my $mode = 0;
 
@@ -111,18 +113,31 @@ sub update_status
     chomp $str;
     if (length($str) > 0)
     {
-	if ($str eq "quit" || $str eq "\\q")
+	if ($str eq "quit")
 	{
 	    print "bye.\n";
 	    exit;
 	}
-	$twit->update($str);
-	if ( my $err = $@ ) {
-	    die $@ unless blessed $err && $err->isa('Net::Twitter::Error');
-	    warn "HTTP Response Code: ", $err->code, "\n",
-	    "HTTP Message......: ", $err->message, "\n",
-	    "Twitter error.....: ", $err->error, "\n";
-	    exit;
+	elsif ($str eq "delete")
+	{
+	    if ($latest_update_id > 0)
+	    {
+		# this cause error but we donnot care.
+		$twit->destroy_status({id => $latest_update_id});
+	    }
+	}
+	else
+	{
+	    my $res = $twit->update($str);
+	    if ( my $err = $@ )
+	    {
+		die $@ unless blessed $err && $err->isa('Net::Twitter::Error');
+		warn "HTTP Response Code: ", $err->code, "\n",
+		"HTTP Message......: ", $err->message, "\n",
+		"Twitter error.....: ", $err->error, "\n";
+		exit;
+	    }
+	    $latest_update_id = $res->{'id'};
 	}
 	$latest_id = 0;
     }
