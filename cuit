@@ -3,7 +3,7 @@
 #
 # author  Tetsuro IKEDA (mir)
 # license GPLv2
-my $version = "0.3";
+my $version = "0.4";
 
 use strict;
 use Net::Twitter;
@@ -85,10 +85,13 @@ sub print_friends
     }
     if ( my $err = $@ ) {
         die $@ unless blessed $err and $err->isa('Net::Twitter::Error');
-        warn "HTTP Response Code: ", $err->code, "\n",
-	"HTTP Message......: ", $err->message, "\n",
-	"Twitter error.....: ", $err->error, "\n";
-	exit;
+	if ($err->code != 200)
+	{
+	    warn "HTTP Response Code: ", $err->code, "\n",
+	    "HTTP Message......: ", $err->message, "\n",
+	    "Twitter error.....: ", $err->error, "\n";
+	    exit;
+	}
     }
     $mode = 1;
     if ($array_ref)
@@ -132,10 +135,13 @@ sub update_status
 	    if ( my $err = $@ )
 	    {
 		die $@ unless blessed $err && $err->isa('Net::Twitter::Error');
-		warn "HTTP Response Code: ", $err->code, "\n",
-		"HTTP Message......: ", $err->message, "\n",
-		"Twitter error.....: ", $err->error, "\n";
-		exit;
+		if ($err->code != 200)
+		{
+		    warn "HTTP Response Code: ", $err->code, "\n",
+		    "HTTP Message......: ", $err->message, "\n",
+		    "Twitter error.....: ", $err->error, "\n";
+		    exit;
+		}
 	    }
 	    $latest_update_id = $res->{'id'};
 	}
